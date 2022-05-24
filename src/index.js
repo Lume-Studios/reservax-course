@@ -59,7 +59,7 @@ const isHolder = async () => {
 
     }
     catch (err) {
-        window.location.assign('/area-do-cliente')
+        // window.location.assign('/area-do-cliente')
         console.log(err)
     }
 }
