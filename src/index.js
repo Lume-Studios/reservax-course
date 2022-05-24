@@ -32,6 +32,8 @@ const createForm = (email = '') => {
     input.classList.add('input-email')
     input.classList.add('w-input')
     input.placeholder = 'SEUNOME@EMAIL.COM'
+    input.style.backgroundColor = '#C9C9C9'
+    input.style.color = '#303030'
     input.value = email
     input.style.color = 'white'
     if (input.value !== '') {
@@ -82,7 +84,8 @@ const setError = (message) => {
 }
 
 const prepareError = () => {
-    loadingWrapper.classList.add('is-hidden')
+    errorWrapper.classList.remove('active-error')
+    errorWrapper.classList.add('is-hidden')
 }
 
 const isHolder = async () => {
@@ -131,6 +134,7 @@ isHolder().then(response => {
 
 const getSubmitEmail = async (value, button, input) => {
     try {
+        prepareError()
         button.innerText = 'Resgatando..'
         await axios.post(process.env.SERVER + 'users/claim-curso', { address, emails: [value] }, {
             headers: {
@@ -144,10 +148,9 @@ const getSubmitEmail = async (value, button, input) => {
         input.style.backgroundColor = '#555'
 
     } catch (err) {
-        prepareError()
         console.log(err)
         setError(err.response?.data)
-        submitEmailButton.classList.remove('is-hidden')
+        button.innerText = 'RESGATAR'
     }
 
 }
