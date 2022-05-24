@@ -48,13 +48,18 @@ const isHolder = async () => {
             submitEmailButton.classList.remove('is-disabled')
             loadingWallet.classList.add('is-hidden')
             textAvailableLicenses.classList.remove('is-hidden')
+
+            if (response?.data.user.tokenQtd === 0) {
+                window.location.assign('/not-holder')
+            }
+
             return response
         }
 
 
     }
     catch (err) {
-        //window.location.assign('/area-do-cliente')
+        window.location.assign('/area-do-cliente')
         console.log(err)
     }
 }
@@ -74,7 +79,11 @@ isHolder().then(response => {
 const getSubmitEmail = async () => {
     try {
         setLoading();
-        return await axios.post('http://localhost:3001/users/claim-curso', { address, emails: [inputEmail.value] })
+        return await axios.post(process.env.SERVER + 'users/claim-curso', { address, emails: [inputEmail.value] }, {
+            headers: {
+                authentication: process.env.AUTHENTICATION
+            }
+        })
     } catch (err) {
         prepareError()
         console.log(err)
