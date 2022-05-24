@@ -1,8 +1,5 @@
 import axios from 'axios'
 
-const usedLicenses = document.querySelector('.used-licenses')
-const availableLicenses = document.querySelector('.available-license')
-const wallet = document.querySelector('.wallet')
 const submitEmailButton = document.querySelector('.submit-email')
 const inputEmail = document.querySelector('.input-email')
 const loadingWrapper = document.querySelector('.loading-wrapper')
@@ -11,9 +8,64 @@ const errorMessage = document.querySelector('.error-message')
 const loadingWallet = document.querySelector('.animation-text')
 const textAvailableLicenses = document.querySelector('.text-available-licenses')
 const emailForm = document.querySelector('.email-form')
+const tokenQtd = document.querySelector('.token_qtd')
+const formBlock = document.querySelector('.form_block')
+const sucessClaim = document.querySelector('.sucess-claim')
+const licensesInfo = document.querySelector('.licenses-info')
 inputEmail.style.color = 'white'
 
 let address = 0
+
+const submitEmail = async () => {
+    const response = await getSubmitEmail()
+    if (response) {
+        window.location.assign('/sucesso-curso')
+    }
+}
+
+const createForm = (email = '') => {
+    const form = document.createElement('form')
+    form.style.display = 'flex'
+    form.style.width = '100%'
+    const input = document.createElement('input')
+    input.classList.add('text-field-2')
+    input.classList.add('input-email')
+    input.classList.add('w-input')
+    input.placeholder = 'SEUNOME@EMAIL.COM'
+    input.value = email
+    input.style.color = 'white'
+    if (input.value !== '') {
+        input.readOnly = true
+        input.style.backgroundColor = '#555'
+    }
+    const button = document.createElement('button')
+    button.classList.add('button')
+    button.classList.add('submit-email')
+    button.classList.add('w-button')
+    button.innerText = 'RESGATAR'
+    button.type = 'button'
+    button.style.alignSelf = 'center'
+    if (input.value !== '') {
+        button.classList.add('is-disabled')
+        button.innerText = 'RESGATADO'
+    }
+    if (input.value === '') {
+        button.addEventListener('click', function () {
+            getSubmitEmail(input.value, button, input)
+        })
+    }
+    form.appendChild(input)
+    form.appendChild(button)
+    formBlock.appendChild(form)
+}
+
+const addForm = (possibleClaims, usedEmails, usedClaims) => {
+    usedEmails.map(email => {
+        createForm(email)
+    });
+    [...Array(possibleClaims - usedClaims)].map(qtd => createForm())
+
+}
 
 const setLoading = () => {
     loadingWrapper.classList.remove('is-hidden')
@@ -67,25 +119,30 @@ const isHolder = async () => {
 }
 
 isHolder().then(response => {
-    console.log('res', response)
-    usedLicenses.innerText = response.data.user.tokenQtd - response.data.user.claimCurso;
-    availableLicenses.innerText = response.data.user.tokenQtd;
-    wallet.innerText = address.substring(0, 5) + '...' + address.substring(address.length - 4, address.length)
     submitEmailButton.classList.remove('is-disabled')
-    if (response.data.user.tokenQtd === response.data.user.claimCurso) {
-        textAvailableLicenses.innerText = 'Você já utilizou todas as licenças disponíveis'
-        emailForm.classList.add('is-hidden')
-    }
+    tokenQtd.innerText = response?.data.user.tokenQtd
+    licensesInfo.innerText = `Isso te dá direito a ${response?.data.user.tokenQtd} licenças`
+    addForm(response.data.user.tokenQtd, response.data.user.cursoEmails, response.data.user.claimCurso)
+    // if (response.data.user.tokenQtd === response.data.user.claimCurso) {
+    //     textAvailableLicenses.innerText = 'Você já utilizou todas as licenças disponíveis'
+    //     emailForm.classList.add('is-hidden')
+    // }
 })
 
-const getSubmitEmail = async () => {
+const getSubmitEmail = async (value, button, input) => {
     try {
-        setLoading();
-        return await axios.post(process.env.SERVER + 'users/claim-curso', { address, emails: [inputEmail.value] }, {
+        button.innerText = 'Resgatando..'
+        await axios.post(process.env.SERVER + 'users/claim-curso', { address, emails: [value] }, {
             headers: {
                 authentication: process.env.AUTHENTICATION
             }
         })
+        sucessClaim.classList.remove('is-hidden')
+        button.classList.add('is-disabled')
+        button.innerText = 'RESGATADO'
+        input.readOnly = true
+        input.style.backgroundColor = '#555'
+
     } catch (err) {
         prepareError()
         console.log(err)
@@ -95,12 +152,7 @@ const getSubmitEmail = async () => {
 
 }
 
-const submitEmail = async () => {
-    const response = await getSubmitEmail()
-    if (response) {
-        window.location.assign('/sucesso-curso')
-    }
-}
+
 
 submitEmailButton.addEventListener('click', submitEmail)
 
