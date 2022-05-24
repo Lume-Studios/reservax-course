@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 const usedLicenses = document.querySelector('.used-licenses')
 const availableLicenses = document.querySelector('.available-license')
 const wallet = document.querySelector('.wallet')
