@@ -105,11 +105,6 @@ const isHolder = async () => {
             submitEmailButton.classList.remove('is-disabled')
             loadingWallet.classList.add('is-hidden')
             textAvailableLicenses.classList.remove('is-hidden')
-
-            if (response?.data.user.tokenQtd === 0) {
-                window.location.assign('/not-holder')
-            }
-
             return response
         }
 
@@ -130,6 +125,9 @@ isHolder().then(response => {
     //     textAvailableLicenses.innerText = 'Você já utilizou todas as licenças disponíveis'
     //     emailForm.classList.add('is-hidden')
     // }
+}).catch(err => {
+    setError(err)
+    window.location.assign('/not-holder')
 })
 
 const getSubmitEmail = async (value, button, input) => {
