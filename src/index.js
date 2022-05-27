@@ -97,22 +97,26 @@ const isHolder = async () => {
         address = accounts[0]
 
         if (accounts.length > 0) {
-            const response = await axios.get(process.env.SERVER + `users/info?address=${address}`, {
-                headers: {
-                    authentication: process.env.AUTHENTICATION
-                }
-            })
-            submitEmailButton.classList.remove('is-disabled')
-            loadingWallet.classList.add('is-hidden')
-            textAvailableLicenses.classList.remove('is-hidden')
-            return response
+            const token = localStorage.getItem('ACCESS_TOKEN')
+            if (token) {
+                axios.defaults.headers.common.authentication = token
+                const response = await axios.get(process.env.SERVER + `users/info?projectId=${process.env.PROJECT_ID}`, {
+                })
+                submitEmailButton.classList.remove('is-disabled')
+                loadingWallet.classList.add('is-hidden')
+                textAvailableLicenses.classList.remove('is-hidden')
+                return response
+            } else {
+                delete axios.defaults.headers.common.authentication
+                window.location.assign('/area-do-cliente')
+            }
+        } else {
+            window.location.assign('/area-do-cliente')
         }
-
-
     }
     catch (err) {
         // window.location.assign('/area-do-cliente')
-        console.log(err)
+        setError(err)
     }
 }
 
@@ -120,24 +124,17 @@ isHolder().then(response => {
     submitEmailButton.classList.remove('is-disabled')
     tokenQtd.innerText = response?.data.user.tokenQtd
     licensesInfo.innerText = `Isso te dá direito a ${response?.data.user.tokenQtd} licenças`
+    textAvailableLicenses.style.marginTop = '12px'
     addForm(response.data.user.tokenQtd, response.data.user.cursoEmails, response.data.user.claimCurso)
-    // if (response.data.user.tokenQtd === response.data.user.claimCurso) {
-    //     textAvailableLicenses.innerText = 'Você já utilizou todas as licenças disponíveis'
-    //     emailForm.classList.add('is-hidden')
-    // }
 }).catch(err => {
     setError(err)
-    window.location.assign('/not-holder')
 })
 
 const getSubmitEmail = async (value, button, input) => {
     try {
         prepareError()
         button.innerText = 'Resgatando..'
-        await axios.post(process.env.SERVER + 'users/claim-curso', { address, emails: [value] }, {
-            headers: {
-                authentication: process.env.AUTHENTICATION
-            }
+        await axios.post(process.env.SERVER + 'users/claim-curso', { emails: [value], projectId: process.env.PROJECT_ID }, {
         })
         sucessClaim.classList.remove('is-hidden')
         button.classList.add('is-disabled')

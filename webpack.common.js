@@ -15,7 +15,7 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js']
     },
     output: {
-        filename: 'bundle_1.0.6.js',
+        filename: 'index_stage_1.0.0.js',
         path: path.resolve(__dirname, 'dist')
     }
 };
