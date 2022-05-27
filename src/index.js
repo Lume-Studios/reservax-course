@@ -1,4 +1,9 @@
 import axios from 'axios'
+import ABI from './contract/ABI.json'
+
+const web3 = new Web3(Web3.givenProvider);
+
+const contract = new web3.eth.Contract(ABI, process.env.CONTRACT_ADDRESS);
 
 const submitEmailButton = document.querySelector('.submit-email')
 const inputEmail = document.querySelector('.input-email')
@@ -95,21 +100,36 @@ const isHolder = async () => {
         });
         console.log(accounts[0])
         address = accounts[0]
+        let balanceTotal = 0;
 
         if (accounts.length > 0) {
-            const token = localStorage.getItem('ACCESS_TOKEN')
-            if (token) {
-                axios.defaults.headers.common.authentication = token
-                const response = await axios.get(process.env.SERVER + `users/info?projectId=${process.env.PROJECT_ID}`, {
-                })
-                submitEmailButton.classList.remove('is-disabled')
-                loadingWallet.classList.add('is-hidden')
-                textAvailableLicenses.classList.remove('is-hidden')
-                return response
-            } else {
-                delete axios.defaults.headers.common.authentication
-                window.location.assign('/area-do-cliente')
+            const array = [0, 1, 2, 3, 4, 5]
+            for (let index of array) {
+                const balance = await contract.methods.balanceOf(address, index).call()
+                console.log(balance)
+                balanceTotal += Number(balance)
             }
+
+            if (balanceTotal) {
+                const token = localStorage.getItem('ACCESS_TOKEN')
+                if (token) {
+                    axios.defaults.headers.common.authentication = token
+                    const response = await axios.get(process.env.SERVER + `users/info?projectId=${process.env.PROJECT_ID}`, {
+                    })
+                    submitEmailButton.classList.remove('is-disabled')
+                    loadingWallet.classList.add('is-hidden')
+                    textAvailableLicenses.classList.remove('is-hidden')
+                    return response
+                } else {
+                    delete axios.defaults.headers.common.authentication
+                    window.location.assign('/area-do-cliente')
+                }
+            } else {
+                localStorage.removeItem('ACCESS_TOKEN')
+                delete axios.defaults.headers.common.authentication
+                window.location.assign('/not-holder')
+            }
+
         } else {
             window.location.assign('/area-do-cliente')
         }
